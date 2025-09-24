@@ -1,6 +1,7 @@
 package com.sarender.springboot.cruddemo.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sarender.springboot.cruddemo.entity.Employee;
 import com.sarender.springboot.cruddemo.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
@@ -73,9 +74,20 @@ public class EmployeeRestController {
 
         Employee patchedEmployee = apply(patchPayload, tempEmployee);
 
+        Employee dbEmployee = employeeService.save(patchedEmployee);
+
+        return dbEmployee;
+
     }
 
     private Employee apply(Map<String, Object> patchPayload, Employee tempEmployee) {
+        ObjectNode employeeNode = objectMapper.convertValue(tempEmployee, ObjectNode.class);
+
+        ObjectNode patchNode = objectMapper.convertValue(patchPayload, ObjectNode.class);
+
+        employeeNode.setAll(patchNode);
+
+        return objectMapper.convertValue(employeeNode, Employee.class);
     }
 
 }
