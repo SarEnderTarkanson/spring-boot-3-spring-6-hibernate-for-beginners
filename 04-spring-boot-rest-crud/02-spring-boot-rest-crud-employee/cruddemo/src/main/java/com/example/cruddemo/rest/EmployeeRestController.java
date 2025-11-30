@@ -5,6 +5,7 @@ import com.example.cruddemo.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.Map;
@@ -67,13 +68,26 @@ public class EmployeeRestController {
         }
 
         if (patchPayload.containsKey("id")) {
-            throw new RuntimeException("Employee id not allowed in the request body - "+employeeId);
+            throw new RuntimeException("Employee id not allowed in the request body - " + employeeId);
         }
 
         Employee patchedEmployee = apply(patchPayload, tempEmployee);
+
+        Employee dbEmployee = employeeService.save(patchedEmployee);
+
+        return dbEmployee;
     }
 
     private Employee apply(Map<String, Object> patchPayload, Employee tempEmployee) {
+
+        ObjectNode employeeNode = objectMapper.convertValue(tempEmployee, ObjectNode.class);
+
+        ObjectNode patchNode = objectMapper.convertValue(patchPayload, ObjectNode.class);
+
+        employeeNode.setAll(patchNode);
+
+        return objectMapper.convertValue(employeeNode, Employee.class);
+
     }
 
 }
